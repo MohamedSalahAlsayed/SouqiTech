@@ -70,7 +70,35 @@ class SiteSettingSeeder extends Seeder
             ]]
         );
 
-        // 4. Services Section
+        // 4. Features Section
+        SiteSetting::updateOrCreate(
+            ['key' => 'features'],
+            ['value' => [
+                [
+                    'icon' => '🚀',
+                    'title_ar' => 'أداء عالي وسرعة تحميل',
+                    'title_en' => 'High Performance & Fast Loading',
+                    'desc_ar' => 'نضمن تجربة مستخدم سلسة وسرعة استجابة ممتازة لموقعك أو تطبيقك.',
+                    'desc_en' => 'We ensure smooth user experience and excellent response time for your site or app.',
+                ],
+                [
+                    'icon' => '🔒',
+                    'title_ar' => 'أمان قوي وحماية بيانات',
+                    'title_en' => 'Strong Security & Data Protection',
+                    'desc_ar' => 'نطبق أفضل معايير الحماية لضمان أمن المعلومات وحماية المستخدمين.',
+                    'desc_en' => 'We apply top security standards to safeguard information and protect users.',
+                ],
+                [
+                    'icon' => '💡',
+                    'title_ar' => 'حلول مبتكرة حسب الاحتياج',
+                    'title_en' => 'Custom Innovative Solutions',
+                    'desc_ar' => 'نصمم حلول برمجية مخصصة تلبي أهداف مؤسستك بشكل احترافي.',
+                    'desc_en' => 'We design tailored software solutions that professionally meet your business goals.',
+                ],
+            ]]
+        );
+
+        // 5. Services Section
         SiteSetting::updateOrCreate(
             ['key' => 'services'],
             ['value' => [

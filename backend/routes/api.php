@@ -17,6 +17,7 @@ Route::middleware('auth.admin')->group(function () {
     Route::get('/admin/stats', [AdminInquiryController::class, 'stats']);
     Route::get('/admin/inquiries', [AdminInquiryController::class, 'index']);
     Route::put('/admin/inquiries/{id}', [AdminInquiryController::class, 'updateStatus']);
+    Route::post('/admin/inquiries/{id}/reply', [AdminInquiryController::class, 'reply']);
     Route::delete('/admin/inquiries/{id}', [AdminInquiryController::class, 'destroy']);
     
     // Site Settings Administration

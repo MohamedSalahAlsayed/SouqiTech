@@ -64,6 +64,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { apiFetch } from '../api.js'
 
 const props = defineProps({
   lang: {
@@ -84,7 +85,7 @@ async function handleLogin() {
   errorMsg.value = ''
 
   try {
-    const response = await fetch('/api/admin/login', {
+    const response = await apiFetch('/admin/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -115,6 +115,7 @@
 
 <script setup>
 import { ref, computed, reactive, inject } from 'vue'
+import { apiFetch } from '../api.js'
 
 const props = defineProps({ lang: String })
 
@@ -152,7 +153,7 @@ async function submitForm() {
   isLoading.value = true
   submitStatus.value = null
   try {
-    const res = await fetch('/api/contact', {
+    const res = await apiFetch('/contact', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       body: JSON.stringify({ ...form }),

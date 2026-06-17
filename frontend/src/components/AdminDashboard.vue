@@ -669,6 +669,50 @@
                 </div>
               </div>
 
+              <!-- ── FEATURES SECTION ── -->
+              <div v-else-if="activeCmsTab === 'features'" class="cms-section-pane">
+                <div class="cms-header-row mb-4">
+                  <h3 class="cms-section-title">🌟 {{ lang === 'ar' ? 'إدارة مميزاتنا' : 'Manage Features' }}</h3>
+                  <button class="btn btn-outline btn-sm" @click="addFeatureDraft">➕ {{ lang === 'ar' ? 'إضافة ميزة' : 'Add Feature' }}</button>
+                </div>
+
+                <div class="cms-list-container">
+                  <div v-for="(feature, idx) in cmsDraft" :key="idx" class="cms-card-item">
+                    <div class="cms-item-header">
+                      <span>✨ {{ lang === 'ar' ? `الميزة #${idx + 1}` : `Feature #${idx + 1}` }}</span>
+                      <button class="btn-icon-square delete ml-2" @click="removeFeatureDraft(idx)">🗑️</button>
+                    </div>
+
+                    <div class="form-group-grid">
+                      <div class="form-group">
+                        <label class="form-label">{{ lang === 'ar' ? 'أيقونة الميزة (Emoji)' : 'Feature Icon (Emoji)' }}</label>
+                        <input type="text" v-model="feature.icon" class="form-input text-center" style="max-width: 80px;" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">{{ lang === 'ar' ? 'عنوان الميزة (عربي)' : 'Title (AR)' }}</label>
+                        <input type="text" v-model="feature.title_ar" class="form-input" />
+                      </div>
+                      <div class="form-group">
+                        <label class="form-label">{{ lang === 'ar' ? 'عنوان الميزة (إنجليزي)' : 'Title (EN)' }}</label>
+                        <input type="text" v-model="feature.title_en" class="form-input" />
+                      </div>
+                    </div>
+
+                    <div class="form-group mt-3">
+                      <label class="form-label">{{ lang === 'ar' ? 'وصف الميزة بالعربية' : 'Description (AR)' }}</label>
+                      <textarea v-model="feature.desc_ar" class="form-textarea" rows="2"></textarea>
+                    </div>
+                    <div class="form-group mt-3">
+                      <label class="form-label">{{ lang === 'ar' ? 'وصف الميزة بالإنجليزية' : 'Description (EN)' }}</label>
+                      <textarea v-model="feature.desc_en" class="form-textarea" rows="2"></textarea>
+                    </div>
+                  </div>
+                  <div v-if="!Array.isArray(cmsDraft) || cmsDraft.length === 0" class="empty-state">
+                    <p>⚠️ {{ lang === 'ar' ? 'لا توجد مميزات حتى الآن. اضغط على إضافة ميزة للبدء.' : 'No features yet. Click Add Feature to get started.' }}</p>
+                  </div>
+                </div>
+              </div>
+
               <!-- ── ABOUT PAGE SECTION ── -->
               <div v-else-if="activeCmsTab === 'about'" class="cms-section-pane">
                 <h3 class="cms-section-title">🏢 {{ lang === 'ar' ? 'تعديل صفحة من نحن' : 'About Us Page Editor' }}</h3>
@@ -987,6 +1031,11 @@
               <h4 class="msg-box-title">{{ t.message }}:</h4>
               <p class="msg-box-text">{{ activeInquiry.message }}</p>
             </div>
+
+            <div class="form-group mt-4">
+              <label class="form-label">{{ t.replyMessage }}</label>
+              <textarea v-model="replyBody" class="form-textarea" rows="4" :placeholder="t.replyPlaceholder"></textarea>
+            </div>
           </div>
 
           <div class="modal-footer">
@@ -997,6 +1046,13 @@
                 @click="updateStatusInModal(activeInquiry.id, 'read')"
               >
                 👀 {{ t.markAsRead }}
+              </button>
+              <button 
+                class="btn btn-success btn-sm"
+                :disabled="isSendingReply"
+                @click="sendInquiryReply(activeInquiry.id)"
+              >
+                ✉️ {{ t.replyByEmail }}
               </button>
               <button 
                 v-if="activeInquiry.status !== 'replied'"
@@ -1019,6 +1075,7 @@
 
 <script setup>
 import { ref, computed, onMounted, inject, reactive } from 'vue'
+import { apiFetch } from '../api.js'
 
 const props = defineProps({
   lang: {
@@ -1053,6 +1110,7 @@ const cmsSubTabs = [
   { key: 'stats', ar: '📊 الإحصائيات', en: '📊 Stats Cards' },
   { key: 'services', ar: '🔧 الخدمات', en: '🔧 Services' },
   { key: 'about', ar: '🏢 من نحن', en: '🏢 About Us' },
+  { key: 'features', ar: '🌟 مميزاتنا', en: '🌟 Features' },
   { key: 'contact', ar: '📞 معلومات التواصل', en: '📞 Contact Info' },
   { key: 'footer', ar: '🔗 الفوتر والروابط', en: '🔗 Footer & Socials' }
 ]
@@ -1087,6 +1145,8 @@ const pagination = ref({
 // Modal
 const showModal = ref(false)
 const activeInquiry = ref({})
+const replyBody = ref('')
+const isSendingReply = ref(false)
 
 // Debounce handle for search
 let searchDebounceTimeout = null
@@ -1147,7 +1207,7 @@ async function initializeDashboard() {
 // Fetch stats overview
 async function fetchStats() {
   try {
-    const res = await fetch('/api/admin/stats', {
+    const res = await apiFetch('/admin/stats', {
       headers: {
         'Authorization': `Bearer ${token.value}`,
         'Accept': 'application/json'
@@ -1181,7 +1241,7 @@ async function fetchInquiries(page = 1) {
       url += `&q=${encodeURIComponent(searchQuery.value)}`
     }
 
-    const res = await fetch(url, {
+    const res = await apiFetch(url.replace(/^\/api/, ''), {
       headers: {
         'Authorization': `Bearer ${token.value}`,
         'Accept': 'application/json'
@@ -1215,7 +1275,7 @@ async function fetchInquiries(page = 1) {
 // API status updating
 async function updateStatus(id, newStatus) {
   try {
-    const res = await fetch(`/api/admin/inquiries/${id}`, {
+    const res = await apiFetch(`/admin/inquiries/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token.value}`,
@@ -1250,7 +1310,7 @@ async function updateStatus(id, newStatus) {
 // API inquiry delete
 async function deleteInquiry(id) {
   try {
-    const res = await fetch(`/api/admin/inquiries/${id}`, {
+    const res = await apiFetch(`/admin/inquiries/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token.value}`,
@@ -1285,6 +1345,7 @@ async function deleteInquiry(id) {
 // Modal actions
 function openInquiryDetails(inq) {
   activeInquiry.value = { ...inq }
+  replyBody.value = ''
   showModal.value = true
   
   // Mark as read automatically if pending
@@ -1307,6 +1368,52 @@ async function deleteInquiryInModal(id) {
   if (confirm(confirmMsg)) {
     showModal.value = false
     await deleteInquiry(id)
+  }
+}
+
+async function sendInquiryReply(id) {
+  if (!replyBody.value.trim()) {
+    triggerCmsAlert('error', props.lang === 'ar' ? 'اكتب رسالة الرد أولاً.' : 'Please enter a reply message first.')
+    return
+  }
+
+  isSendingReply.value = true
+  try {
+    const res = await apiFetch(`/admin/inquiries/${id}/reply`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token.value}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        message: replyBody.value,
+        subject: activeInquiry.value.subject ? `Re: ${activeInquiry.value.subject}` : 'Reply from SouqiTech'
+      })
+    })
+
+    if (res.status === 401) {
+      handleUnauthorized()
+      return
+    }
+
+    const json = await res.json()
+    if (res.ok && json.success) {
+      activeInquiry.value.status = 'replied'
+      const listItem = inquiries.value.find(i => i.id === id)
+      if (listItem) listItem.status = 'replied'
+      const recentItem = recentInquiries.value.find(i => i.id === id)
+      if (recentItem) recentItem.status = 'replied'
+      triggerCmsAlert('success', props.lang === 'ar' ? 'تم إرسال الرد بنجاح.' : 'Reply sent successfully.')
+      replyBody.value = ''
+    } else {
+      triggerCmsAlert('error', json.message || (props.lang === 'ar' ? 'فشل إرسال الرد.' : 'Failed to send reply.'))
+    }
+  } catch (err) {
+    console.error('Reply send error:', err)
+    triggerCmsAlert('error', props.lang === 'ar' ? 'حدث خطأ في الاتصال بالخادم.' : 'Server connection error.')
+  } finally {
+    isSendingReply.value = false
   }
 }
 
@@ -1353,7 +1460,7 @@ async function handleLogoutClick() {
   if (!confirm(confirmMsg)) return
 
   try {
-    await fetch('/api/admin/logout', {
+    await apiFetch('/admin/logout', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token.value}`,
@@ -1491,6 +1598,25 @@ function removeAchievementDraft(idx) {
   }
 }
 
+function addFeatureDraft() {
+  if (!Array.isArray(cmsDraft.value)) {
+    cmsDraft.value = []
+  }
+  cmsDraft.value.push({
+    icon: '✨',
+    title_ar: 'ميزة جديدة',
+    title_en: 'New Feature',
+    desc_ar: 'وصف الميزة الجديدة هنا.',
+    desc_en: 'New feature description goes here.'
+  })
+}
+
+function removeFeatureDraft(idx) {
+  if (Array.isArray(cmsDraft.value)) {
+    cmsDraft.value.splice(idx, 1)
+  }
+}
+
 function addTechLogoDraft() {
   if (!cmsDraft.value.techs) cmsDraft.value.techs = []
   cmsDraft.value.techs.push({ icon: '🐳', name: 'Docker' })
@@ -1512,7 +1638,7 @@ async function saveCmsSetting(key) {
   // Use the actual API key (contact_info not contact)
   const apiKey = cmsKeyMap[key] || key
   try {
-    const res = await fetch(`/api/admin/site-settings/${apiKey}`, {
+    const res = await apiFetch(`/admin/site-settings/${apiKey}`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token.value}`,
@@ -1617,6 +1743,9 @@ const translations = {
     manageInquiries: 'إدارة الرسائل الواردة',
     manageInquiriesDesc: 'استعرض، ابحث، رتب، واحذف الرسائل والطلبات الواردة من عملائك.',
     searchPlaceholder: 'ابحث بالاسم، البريد الإلكتروني، أو الموضوع...',
+    replyByEmail: 'الرد عبر البريد',
+    replyMessage: 'نص الرد',
+    replyPlaceholder: 'اكتب ردك هنا ليتم إرساله إلى البريد الإلكتروني للعميل...',
     all: 'الكل',
     client: 'العميل',
     subject: 'الموضوع',
@@ -1678,6 +1807,9 @@ const translations = {
     name: 'Name',
     email: 'Email',
     message: 'Message',
+    replyByEmail: 'Reply by Email',
+    replyMessage: 'Reply Message',
+    replyPlaceholder: 'Type your reply here to send it to the customer email...',
     loadingData: 'Loading data from server...',
     messages: 'messages',
     cmsSettings: 'CMS Content',

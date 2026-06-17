@@ -58,6 +58,7 @@
       <transition name="page-fade" mode="out-in">
         <HomeTab     v-if="activePage === 'home'"       :key="'home'"     :lang="lang" @navigate="activePage = $event" />
         <AboutTab    v-else-if="activePage === 'about'"    :key="'about'"    :lang="lang" />
+        <FeaturesTab v-else-if="activePage === 'features'" :key="'features'" :lang="lang" />
         <ServicesTab v-else-if="activePage === 'services'" :key="'services'" :lang="lang" />
         <ContactTab  v-else-if="activePage === 'contact'"   :key="'contact'"  :lang="lang" />
         <div v-else-if="activePage === 'admin'" :key="'admin'" class="admin-page-container">
@@ -154,9 +155,11 @@ import HomeTab     from './components/HomeTab.vue'
 import AboutTab    from './components/AboutTab.vue'
 import ServicesTab from './components/ServicesTab.vue'
 import ContactTab  from './components/ContactTab.vue'
+import FeaturesTab from './components/FeaturesTab.vue'
 import AdminLogin  from './components/AdminLogin.vue'
 import AdminDashboard from './components/AdminDashboard.vue'
 import FloatingWhatsApp from './components/FloatingWhatsApp.vue'
+import { apiFetch } from './api.js'
 
 const lang       = ref('ar')
 const activePage = ref('home')
@@ -192,6 +195,29 @@ const settings = ref({
     { value: '+30', label_ar: 'عميل راضٍ', label_en: 'Happy Clients' },
     { value: '5★', label_ar: 'تقييم العملاء', label_en: 'Client Rating' },
     { value: '+3', label_ar: 'سنوات خبرة', label_en: 'Years of Experience' }
+  ],
+  features: [
+    {
+      icon: '🚀',
+      title_ar: 'أداء عالي وسرعة تحميل',
+      title_en: 'High Performance & Fast Loading',
+      desc_ar: 'نضمن تجربة مستخدم سلسة وسرعة استجابة ممتازة لموقعك أو تطبيقك.',
+      desc_en: 'We ensure smooth user experience and excellent response time for your site or app.'
+    },
+    {
+      icon: '🔒',
+      title_ar: 'أمان قوي وحماية بيانات',
+      title_en: 'Strong Security & Data Protection',
+      desc_ar: 'نطبق أفضل معايير الحماية لضمان أمن المعلومات وحماية المستخدمين.',
+      desc_en: 'We apply top security standards to safeguard information and protect users.'
+    },
+    {
+      icon: '💡',
+      title_ar: 'حلول مبتكرة حسب الاحتياج',
+      title_en: 'Custom Innovative Solutions',
+      desc_ar: 'نصمم حلول برمجية مخصصة تلبي أهداف مؤسستك بشكل احترافي.',
+      desc_en: 'We design tailored software solutions that professionally meet your business goals.'
+    }
   ],
   services: [
     {
@@ -292,7 +318,7 @@ provide('settings', settings)
 
 async function fetchSettings() {
   try {
-    const res = await fetch('/api/site-settings')
+    const res = await apiFetch('/site-settings')
     if (res.ok) {
       const data = await res.json()
       if (data.success && data.data) {
@@ -331,6 +357,7 @@ function handleLogout() {
 const navItems = [
   { key: 'home',     ar: 'الرئيسية',    en: 'Home' },
   { key: 'about',    ar: 'من نحن',      en: 'About Us' },
+  { key: 'features', ar: 'مميزاتنا',    en: 'Features' },
   { key: 'services', ar: 'خدماتنا',     en: 'Services' },
   { key: 'contact',  ar: 'تواصل معنا',  en: 'Contact' },
 ]

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Inquiry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class AdminInquiryController extends Controller
 {
@@ -61,6 +62,45 @@ class AdminInquiryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'تم حذف الرسالة بنجاح. / Inquiry deleted successfully.',
+        ]);
+    }
+
+    public function reply(Request $request, $id)
+    {
+        $request->validate([
+            'message' => 'required|string|min:3',
+            'subject' => 'nullable|string|max:255',
+        ]);
+
+        $inquiry = Inquiry::findOrFail($id);
+        $replyMessage = $request->input('message');
+        $subject = $request->input('subject') ?: 'Re: ' . ($inquiry->subject ?: 'Your Inquiry');
+
+        $fromEmail = config('mail.from.address') ?: config('mail.support.address', 'noreply@example.com');
+        $fromName = config('mail.from.name') ?: config('app.name');
+
+        try {
+            Mail::send([], [], function ($message) use ($inquiry, $replyMessage, $subject, $fromEmail, $fromName) {
+                $message->to($inquiry->email, $inquiry->name)
+                    ->subject($subject)
+                    ->from($fromEmail, $fromName)
+                    ->setBody(nl2br(e($replyMessage)), 'text/html');
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل إرسال الرد عبر البريد الإلكتروني. / Failed to send email reply.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
+        $inquiry->status = 'replied';
+        $inquiry->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إرسال الرد إلى العميل بنجاح. / Reply sent successfully.',
+            'data' => $inquiry,
         ]);
     }
 
