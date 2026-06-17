@@ -80,6 +80,24 @@
       </div>
     </section>
 
+    <!-- ══════════ FEATURES SECTION ══════════ -->
+    <section class="section features-brief">
+      <div class="container">
+        <div class="text-center mb-4">
+          <p class="section-label" style="justify-content:center">{{ t.featuresLabel }}</p>
+          <h2 class="section-title">{{ t.featuresTitle }}</h2>
+          <p class="section-desc">{{ t.featuresDesc }}</p>
+        </div>
+        <div class="grid-3">
+          <div class="card feature-card" v-for="(feature, idx) in features" :key="idx">
+            <div class="feature-icon">{{ feature.icon }}</div>
+            <h3 class="card-title">{{ lang === 'ar' ? feature.title_ar : feature.title_en }}</h3>
+            <p class="card-desc">{{ lang === 'ar' ? feature.desc_ar : feature.desc_en }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ══════════ CTA BANNER ══════════ -->
     <section class="cta-banner">
       <div class="container">
@@ -108,6 +126,7 @@ const settings = inject('settings')
 
 const techTags = computed(() => settings.value.hero?.tech_tags || [])
 const stats = computed(() => settings.value.stats || [])
+const features = computed(() => settings.value.features || [])
 const services = computed(() => settings.value.services || [])
 
 const t = computed(() => {
@@ -131,6 +150,9 @@ const t = computed(() => {
     servicesLabel: isAr ? 'خدماتنا' : 'Our Services',
     servicesTitle: isAr ? 'ما نقدمه لك' : 'What We Offer',
     seeMore: isAr ? 'اعرف أكثر' : 'Learn More',
+    featuresLabel: isAr ? 'مميزاتنا' : 'Our Features',
+    featuresTitle: isAr ? 'لماذا تختارنا؟' : 'Why Choose Us?',
+    featuresDesc: isAr ? 'اكتشف أهم المزايا التي نقدمها في حلولنا الرقمية.' : 'Explore the key features we deliver in our digital solutions.',
     
     ctaBannerTitle: isAr ? 'هل أنت مستعد لبناء مشروعك الرقمي؟' : 'Ready to Build Your Digital Project?',
     ctaBannerSub: isAr ? 'تواصل معنا اليوم واحصل على استشارة تقنية مجانية لمشروعك.' : 'Contact us today and get a free technical consultation for your project.',
