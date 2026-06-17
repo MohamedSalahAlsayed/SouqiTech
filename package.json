@@ -1,0 +1,14 @@
+{
+  "name": "souqi-tech",
+  "version": "1.0.0",
+  "description": "Souqi Tech - Web development company",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend"
+  },
+  "workspaces": [
+    "frontend"
+  ]
+}
