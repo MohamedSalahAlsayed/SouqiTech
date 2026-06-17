@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm install --prefix frontend && npm run build --prefix frontend",
+  "outputDirectory": "frontend/dist",
+  "framework": "vite",
+  "env": {
+    "VITE_API_BASE_URL": "@vite_api_base_url"
+  },
+  "functions": {
+    "api/**": {
+      "runtime": "php:8.1"
+    }
+  }
+}
